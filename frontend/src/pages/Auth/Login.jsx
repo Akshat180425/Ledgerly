@@ -5,13 +5,18 @@ import { useNavigate } from 'react-router-dom';
 import Input from '../../components/Inputs/Input';
 import { Link } from 'react-router-dom';
 import { validateEmail } from '../../utils/helper';
-import toast from 'react-hot-toast'
+import axiosInstance from '../../utils/axiosInstance';
+import { UserContext } from '../../context/UserContext';
+import { API_PATHS } from '../../utils/apiPaths';
+import { useContext } from 'react';
 
 const Login = () => {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+
+  const { updateUser } = useContext(UserContext);
 
   const navigate = useNavigate();
 
@@ -26,6 +31,25 @@ const Login = () => {
       return;
     }
     setError("");
+
+    try { 
+      const response = await axiosInstance.post(API_PATHS. AUTH.LOGIN, { 
+        email, 
+        password, 
+      }); 
+      const { token, user } = response.data; 
+      if (token) { 
+        localStorage.setItem( "token", token); 
+        updateUser(user); 
+        navigate("/dashboard"); 
+      } 
+    } catch (error) { 
+      if (error.response && error.response.data.message) { 
+        setError(error.response.data.message); 
+      } else { 
+        setError("Something went wrong. Please try again."); 
+      } 
+    }
   }
 
   return (
