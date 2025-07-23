@@ -5,8 +5,6 @@ const Input = ({ value, onChange, placeholder, label, type }) => {
 
   const [showPassword, setShowPassword] = useState(false);
 
-
-
   const toggleShowPassword = () => {
 
     setShowPassword(!showPassword);
@@ -17,7 +15,7 @@ const Input = ({ value, onChange, placeholder, label, type }) => {
 
     <div>
 
-      <label className="text-[13px] text-slate-800">{label}</label>
+      <label className="text-[13px] text-slate-800">{label || ""}</label>
 
       <div className="input-box">
 
@@ -27,7 +25,7 @@ const Input = ({ value, onChange, placeholder, label, type }) => {
 
           className="w-full bg-transparent outline-none"
 
-          value={value} onChange={(e) => onChange(e)}
+          value={value || ""} onChange={(e) => onChange(e)}
 
         />
 
@@ -43,7 +41,7 @@ const Input = ({ value, onChange, placeholder, label, type }) => {
 
                 className="text-primary cursor-pointer"
 
-                onClick={() => toggleShowPassword()}
+                onClick={toggleShowPassword}
 
               />
 
@@ -55,7 +53,7 @@ const Input = ({ value, onChange, placeholder, label, type }) => {
 
                 className="text-slate-400 cursor-pointer"
 
-                onClick={() => toggleShowPassword()}
+                onClick={toggleShowPassword}
 
               />
 
