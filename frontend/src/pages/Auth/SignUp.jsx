@@ -3,6 +3,11 @@ import AuthLayout from "../../components/layouts/AuthLayout";
 import { Link, useNavigate } from "react-router-dom";
 import Input from "../../components/Inputs/Input";
 import ProfilePhotoSelector from "../../components/Inputs/ProfilePhotoSelector";
+import { validateEmail } from "../../utils/helper";
+import axiosInstance from "../../utils/axiosInstance";
+import uploadImage from "../../utils/uploadImage";
+import { API_PATHS } from "../../utils/apiPaths";
+import { UserContext } from "../../context/UserContext";
 
 const SignUp = () => {
   const [profilePic, setProfilePic] = useState(null);
@@ -11,6 +16,7 @@ const SignUp = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const { updateUser } = React.useContext(UserContext);
   const handleSignUp = async (e) => { 
     e.preventDefault();
 
@@ -30,16 +36,43 @@ const SignUp = () => {
     }
     setError("");
 
+    try { 
+
+      if (profilePic) {
+        const imageUploadRes = await uploadImage(profilePic);
+        profileImageUrl = imageUploadRes.imageUrl || "";
+      }
+
+      const response = await axiosInstance.post(API_PATHS.AUTH.REGISTER, { 
+        fullName, 
+        email, 
+        password, 
+        profileImageUrl
+      }); 
+      
+      const { token, user } = response.data; 
+      if (token) { 
+        localStorage.setItem("token", token); 
+        updateUser (user); 
+        navigate("/dashboard"); 
+      } 
+    } catch (error) { 
+      if (error.response && error.response.data.message) { 
+        setError(error.response.data.message); 
+      } else { 
+        setError("Something went wrong. Please try again."); 
+      } 
+    }
    }
 
   return (
 
     <AuthLayout>
       <div className="lg:w-[100%] h-auto md:h-full mt-10 md:mt-0 flex flex-col justify-center">
-        <h3 className="text-x1 font-semibold text-black">
+        <h3 className="text-xl font-semibold text-black">
         Create an Account
         </h3> 
-        <p className="text-xs Otext-slate-700 mt-[5px] mb-6"> 
+        <p className="text-xs text-slate-700 mt-[5px] mb-6"> 
           Join us today by entering your details below. 
         </p> 
         <form onSubmit={handleSignUp}> 
