@@ -38,7 +38,7 @@ const StatsInfoCard = ({ icon, label, value, color }) => {
       {icon}
     </div>
     <div>
-      <h6 className="text-s text-gray-500 mb-1">
+      <h6 className="text-sm text-gray-500 mb-1">
         {label}
       </h6>
       <span className="text-[20px] font-semibold text-gray-800">
