@@ -69,7 +69,7 @@ const Income = () => {
 
   const deleteIncome = async (id) => {
     try { 
-      await axiosInstance.delete(API_PATHS.INCOME.DELETE_INCOME (id)); 
+      await axiosInstance.delete(API_PATHS.INCOME.DELETE_INCOME(id)); 
       setOpenDeleteAlert({ show: false, data: null }); 
       toast.success ("Income details deleted successfully"); 
       fetchIncomeDetails(); 
@@ -84,7 +84,7 @@ const Income = () => {
   const handleDownloadIncomeDetails = async () => {
     try { 
       const response = await axiosInstance.get( 
-        API_PATHS. EXPENSE. DOWNLOAD_EXPENSE, 
+        API_PATHS. INCOME. DOWNLOAD_INCOME, 
         { responseType: "blob", } 
       );
       const url = window.URL.createObjectURL(new Blob( [response.data]));
@@ -97,7 +97,7 @@ const Income = () => {
       window. URL. revokeObjectURL (url); 
     } catch (error) { 
       console.error("Error downloading income details:", error);
-      toast.error("Failed to download expnse details. Please try again later.")
+      toast.error("Failed to download income details. Please try again later.")
     }
   };
 
@@ -136,6 +136,33 @@ const Income = () => {
         >
           <AddIncomeForm onAddIncome={handleAddIncome} />
         </Modal>
+
+        <Modal
+          isOpen={openDeleteAlert.show}
+          onClose={() => setOpenDeleteAlert({ show: false, data: null })}
+          title="Delete Income"
+        >
+          <div className="space-y-4">
+            <p>Are you sure you want to delete this income entry?</p>
+            <div className="flex justify-end gap-4">
+              <button
+                type="button"
+                className="btn-primary bg-gray-200 text-gray-800 hover:bg-gray-300"
+                onClick={() => setOpenDeleteAlert({ show: false, data: null })}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn-primary bg-red-500 hover:bg-red-600"
+                onClick={() => deleteIncome(openDeleteAlert.data)}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </Modal>
+
       </div>
     </DashboardLayout>
   );
