@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import CustomPieChart from '../../components/Charts/CustomPieChart';
+import CustomBarChart from '../Charts/CustomBarChart';
+import { prepareIncomeBarChartData } from '../../utils/helper';
 
 const COLORS = ["#875CF5", "#FA2C37", "#FF6900", "#413976"];
 
@@ -7,11 +8,7 @@ const RecentIncomeWithChart = ({ data, totalIncome }) => {
   const [chartData, setChartData] = useState([]);
 
   useEffect(() => {
-    const dataArr = data?.map(item => ({
-      name: item?.source,
-      amount: item?.amount,
-    })) || [];
-    setChartData(dataArr);
+    setChartData(prepareIncomeBarChartData(data));
   }, [data]);
 
   return (
@@ -19,10 +16,10 @@ const RecentIncomeWithChart = ({ data, totalIncome }) => {
       <div className="flex items-center justify-between">
         <h5 className="text-lg">Last 60 Days Income</h5>
       </div>
-      <CustomPieChart
+      <CustomBarChart
         data={chartData}
         label="Total Income"
-        totalAmount={`$${totalIncome}`}
+        totalAmount={`₹${totalIncome}`}
         showTextAnchor
         colors={COLORS}
       />
