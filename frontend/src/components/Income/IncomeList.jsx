@@ -7,7 +7,7 @@ const IncomeList = ({transactions, onDelete, onDownload}) => {
   return ( 
     <div className="card"> 
       <div className="flex items-center justify-between"> 
-        <h5 className="text-1g">
+        <h5 className="text-lg">
           Income Sources
         </h5> 
         <button 
