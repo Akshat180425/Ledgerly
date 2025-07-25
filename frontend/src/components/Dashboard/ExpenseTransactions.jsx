@@ -17,7 +17,7 @@ const ExpenseTransactions = ({ transactions, onSeeMore }) => {
           <LuArrowRight className="text-base" /> 
         </button> 
       </div> 
-      <div className="mt-6"> 
+      <div className="mt-6 max-h-64 overflow-y-auto pr-1"> 
         {transactions?.slice(0, 5)?.map((expense) => (
           <TransactionInfoCard 
             key={expense._id} 
