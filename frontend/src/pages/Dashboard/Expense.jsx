@@ -18,7 +18,7 @@ const Expense = () => {
     if (loading) return;
     setLoading(true);
     try {
-      const response = await axiosInstance.get(`${API_PATHS.INCOME.GET_ALL_INCOME}`);
+      const response = await axiosInstance.get(`${API_PATHS.EXPENSE.GET_ALL_EXPENSE}`);
       if (response.data) {
         setExpenseData(response.data);
       }
@@ -29,11 +29,9 @@ const Expense = () => {
     }
   };
   const handleAddExpense = async (expense) => { 
-    const { source, amount, date, icon } = expense;
+    const { category, amount, date, icon } = expense;
 
-    // Validation Checks
-
-    if (!source.trim()) { 
+    if (!category.trim()) { 
       toast.error("Source is required."); 
       return;
     }
@@ -49,8 +47,8 @@ const Expense = () => {
     };
 
     try { 
-      await axiosInstance.post(API_PATHS.INCOME.ADD_INCOME, { 
-        source, 
+      await axiosInstance.post(API_PATHS.EXPENSE.ADD_EXPENSE, { 
+        category, 
         amount, 
         date, 
         icon, 
@@ -68,7 +66,7 @@ const Expense = () => {
   };
   const deleteExpense = async (id) => {
     try { 
-      await axiosInstance.delete(API_PATHS.INCOME.DELETE_INCOME (id)); 
+      await axiosInstance.delete(API_PATHS.EXPENSE.DELETE_EXPENSE(id)); 
       setOpenDeleteAlert({ show: false, data: null }); 
       toast.success ("Expense details deleted successfully"); 
       fetchExpenseDetails(); 
@@ -95,7 +93,7 @@ const Expense = () => {
       window. URL. revokeObjectURL (url); 
     } catch (error) { 
       console.error("Error downloading expense details:", error);
-      toast.error("Failed to download expnse details. Please try again later.")
+      toast.error("Failed to download expense details. Please try again later.")
     }
   };
 
@@ -133,6 +131,32 @@ const Expense = () => {
           title="Add Expense"
         >
           <AddExpenseForm onAddExpense={handleAddExpense} />
+        </Modal>
+
+        <Modal
+          isOpen={openDeleteAlert.show}
+          onClose={() => setOpenDeleteAlert({ show: false, data: null })}
+          title="Delete Expense"
+        >
+          <div className="space-y-4">
+            <p>Are you sure you want to delete this expense entry?</p>
+            <div className="flex justify-end gap-4">
+              <button
+                type="button"
+                className="btn-primary bg-gray-200 text-gray-800 hover:bg-gray-300"
+                onClick={() => setOpenDeleteAlert({ show: false, data: null })}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn-primary bg-red-500 hover:bg-red-600"
+                onClick={() => deleteExpense(openDeleteAlert.data)}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
         </Modal>
       </div>
     </DashboardLayout>
