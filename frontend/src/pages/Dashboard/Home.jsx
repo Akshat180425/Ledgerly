@@ -47,10 +47,6 @@ const Home = () => {
     fetchDashboardData();
   }, []);
 
-  useEffect(() => {
-    console.log("📦 last30DaysExpenses:", dashboardData?.last30DaysExpenses);
-  }, [dashboardData]);
-
   return (
     <DashboardLayout activeMenu="Dashboard">
       <div className="my-5 mx-auto">
