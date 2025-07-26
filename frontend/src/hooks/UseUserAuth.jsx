@@ -1,4 +1,4 @@
-import React, { useEffect, useContext } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { UserContext } from "../context/UserContext";
 import axiosInstance from "../utils/axiosInstance";
@@ -7,9 +7,13 @@ import { API_PATHS } from "../utils/apiPaths";
 export const useUserAuth = () => {
   const { user, updateUser, clearUser } = useContext(UserContext);
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(!user);
 
   useEffect(() => {
-    if (user) return;
+    if (user) {
+      setLoading(false);
+      return;
+    }
 
     let isMounted = true;
 
@@ -25,6 +29,8 @@ export const useUserAuth = () => {
           clearUser();
           navigate("/login");
         }
+      } finally {
+        if (isMounted) setLoading(false);
       }
     };
 
@@ -33,5 +39,7 @@ export const useUserAuth = () => {
     return () => {
       isMounted = false;
     };
-  }, [user, updateUser, clearUser, navigate]);
+  }, [user]);
+
+  return { user, loading };
 };
