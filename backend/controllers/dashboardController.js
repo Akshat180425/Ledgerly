@@ -1,78 +1,79 @@
-const xlsx = require("xlsx");
+const Income = require("../models/Income");
 const Expense = require("../models/Expense");
+const { isValidObjectId, Types } = require("mongoose");
 
-exports.addExpense = async (req, res) => {
-  const userId = req.user.id; 
+exports.getDashboardData = async (req, res) => { 
   try { 
-    const { 
-      icon, category, amount, date 
-    } = req.body; 
-    if (!category || !amount || !date) { 
-      return res.status(400).json({ 
-        message: "All fields are required" 
-      }); 
-    } const newExpense = new Expense ({ 
-      userId, icon, category, amount, date: new Date(date) 
+    const userId = req.user.id; 
+    const userObjectId = new Types.ObjectId(String(userId)); 
+    const totalIncome = await Income.aggregate([ 
+      { $match: { userId: userObjectId } }, 
+      { $group: { _id: null, total: { $sum: "$amount" } } }, 
+    ]); 
+    
+    console.log("totalIncome", {totalIncome, userId: isValidObjectId(userId)});
+
+    const totalExpense = await Expense.aggregate([ 
+      { $match: { userId: userObjectId } }, 
+      { $group: { _id: null, total: { $sum: "$amount" } } }, 
+    ]); 
+
+    const last60DaysIncomeTransactions = await Income.find({ 
+      userId, 
+      date: { $gte: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000) }, 
+    }).sort({ date: -1 }); 
+
+    const incomeLast60Days = last60DaysIncomeTransactions.reduce( 
+      (sum, transaction) => sum + transaction.amount, 
+      0 
+    );
+
+    const last30DaysExpenseTransactions = await Expense.find({ 
+      userId, 
+      date: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }, 
+    }).sort({ date: -1 }); 
+    
+    const expensesLast30Days = last30DaysExpenseTransactions.reduce( 
+      (sum, transaction) => sum + transaction.amount, 
+      0 
+    );
+
+    const lastTransactions = [ 
+      ...(await Income.find({ userId }).sort({ date: -1 }).limit(5)).map( 
+        (txn) => ({ 
+          ...txn.toObject(), 
+          type: "income", 
+        }) 
+      ), 
+      ...(await Expense.find({ userId }).sort({ date: -1 }).limit(5)).map( 
+        (txn) => ({ 
+          ...txn.toObject(), 
+          type: "expense", 
+        }) 
+      ), 
+    ].sort((a, b) => b.date - a.date); 
+
+    res.json({ totalBalance:
+
+      (totalIncome[0]?.total || 0) - (totalExpense[0]?.total || 0), 
+      totalIncome: totalIncome[0]?.total || 0, 
+      totalExpense: totalExpense[0]?.total || 0, 
+      last30DaysExpenses: {
+        total: expensesLast30Days,
+        transactions: last30DaysExpenseTransactions,
+      }, 
+      
+      last60DaysIncome: { 
+        total: incomeLast60Days, 
+        transactions: last60DaysIncomeTransactions, 
+      }, 
+      
+      recentTransactions: lastTransactions, 
     }); 
-    await newExpense.save(); 
-    res.status(200).json(newExpense); 
   } catch (error) { 
     res.status(500).json({ 
-      message: "Server Error" 
+      message: "Server Error", 
+      error 
     }); 
-  }
+  } 
 }
-
-exports.getAllExpense = async (req, res) => {
-  const userId = req.user.id;
-
-  try { 
-    const expense = await Expense.find({ userId }).sort({ date: -1 }); 
-    res.json(expense);
-  } catch (error) { 
-    res.status(500).json({ 
-      message: "Server Error" 
-    }); 
-  }
-}
-
-exports.deleteExpense = async (req, res) => {
-  try { 
-    await Expense.findByIdAndDelete(req.params.id); 
-    res.json({ 
-      message: "Expense deleted successfully" 
-    }); 
-  } catch (error) { 
-    res.status(500).json({ 
-      message: "Server Error" 
-    }); 
-  }
-}
-
-exports.downloadExpenseExcel = async (req, res) => {
-  const userId = req.user.id;
-
-  try {
-    const expense = await Expense.find({ userId }).sort({ date: -1 });
-
-    const data = expense.map((item) => ({
-      Category: item.category,
-      Amount: item.amount,
-      Date: item.date,
-    }));
-
-    const wb = xlsx.utils.book_new();
-    const ws = xlsx.utils.json_to_sheet(data);
-    xlsx.utils.book_append_sheet(wb, ws, "Expense");
-
-    const buffer = xlsx.write(wb, { type: "buffer", bookType: "xlsx" });
-
-    res.setHeader("Content-Disposition", "attachment; filename=expense_details.xlsx");
-    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-    res.send(buffer);
-  } catch (error) {
-    res.status(500).json({
-      message: "Server Error",
-    });
-  }
-};
