@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import CustomBarChart from '../Charts/CustomBarChart';
+import CustomLineChart from '../Charts/CustomLineChart';
 import { prepareIncomeBarChartData } from '../../utils/helper';
-
-const COLORS = ["#875CF5", "#FA2C37", "#FF6900", "#413976"];
 
 const RecentIncomeWithChart = ({ data, totalIncome }) => {
   const [chartData, setChartData] = useState([]);
@@ -16,13 +14,10 @@ const RecentIncomeWithChart = ({ data, totalIncome }) => {
       <div className="flex items-center justify-between">
         <h5 className="text-lg">Last 60 Days Income</h5>
       </div>
-      <CustomBarChart
-        data={chartData}
-        label="Total Income"
-        totalAmount={`₹${totalIncome}`}
-        showTextAnchor
-        colors={COLORS}
-      />
+      <p className="text-sm text-gray-500 mt-1">
+        Total Income: <span className="font-medium text-black">₹{totalIncome}</span>
+      </p>
+      <CustomLineChart data={chartData} />
     </div>
   );
 };
