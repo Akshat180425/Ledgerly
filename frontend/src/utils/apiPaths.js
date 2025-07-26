@@ -1,4 +1,8 @@
-export const BASE_URL = "http://localhost:8000"; 
+const baseURL = import.meta.env.VITE_API_URL;
+
+fetch(`${baseURL}/api/expenses`)
+  .then(res => res.json())
+  .then(data => console.log(data));
 
 export const API_PATHS = { 
   AUTH: { 
