@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import CustomBarChart from '../Charts/CustomBarChartForExpenses';
+import CustomLineChart from '../Charts/CustomLineChart';
 import { prepareExpenseBarChartData } from '../../utils/helper';
 
 const Last30DaysExpenses = ({ data, totalExpense }) => {
@@ -15,12 +15,12 @@ const Last30DaysExpenses = ({ data, totalExpense }) => {
       <div className="flex items-center justify-between">
         <h5 className="text-lg">Last 30 Days Expense</h5>
       </div>
-      <CustomBarChart
-        data={chartData}
-        label="Total Expense"
-        totalAmount={`₹${totalExpense}`}
-        color="#FA2C37" // Optional: use red shade for expense
-      />
+      
+      <p className="text-sm text-gray-500 mt-1">
+        Total Expense: <span className="font-medium text-black">₹{totalExpense}</span>
+      </p>
+
+      <CustomLineChart data={chartData} />
     </div>
   );
 };
