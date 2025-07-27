@@ -13,7 +13,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "https://ledgerly-09sf.onrender.com",
+      "https://ledgerly-five.vercel.app/",
     ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
