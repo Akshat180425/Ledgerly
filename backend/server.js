@@ -13,7 +13,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "https://ledgerly-vjvk.onrender.com",
+      "https://ledgerly-09sf.onrender.com",
     ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
