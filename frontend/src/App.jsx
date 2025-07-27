@@ -14,6 +14,8 @@ import Income from './pages/Dashboard/Income';
 import Expense from './pages/Dashboard/Expense';
 
 const App = () => {
+  
+  console.log("VITE_API_URL at runtime:", import.meta.env.VITE_API_URL);
   return (
     <UserProvider>
       <div>
