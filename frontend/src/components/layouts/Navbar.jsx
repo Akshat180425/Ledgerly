@@ -13,9 +13,10 @@ const Navbar = ({activeMenu}) => {
       }} > 
       {openSideMenu ? ( <HiOutlineX className="text-2xl" /> ) : ( <HiOutlineMenu className="text-2xl" /> )} 
       </button> 
-      <h2 className="text-lg font-medium text-black">
+      <h2 className="text-lg font-medium text-black flex items-center gap-2">
+        <img src="../../../public/assets/images/Logo/Transparent_Black&White_NoName.png" alt="Logo" className="h-6 w-6 object-contain" />
         Ledgerly
-      </h2> 
+      </h2>
       {openSideMenu && ( 
         <div className="fixed top-[60px] -ml-4 bg-white"> 
           <SideMenu activeMenu={activeMenu} /> 
