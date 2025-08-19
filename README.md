@@ -17,7 +17,7 @@ Here's a quick look at various parts of the app:
 
 Users can register or log in using a beautiful, responsive User interface.
 
-![Login Page](./Screenshots/Login%20Page.png)
+![Login Page](./frontend/public/assets/images/Screenshots/Login%20Page.png)
 
 - DASHBOARD PAGE:
 
