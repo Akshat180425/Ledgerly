@@ -5,7 +5,7 @@ A full-stack personal finance tool designed for seamless expense tracking and bu
 Welcome to the source code of Ledgerly!
 
 ## Live Demo:
-[CONVO - Click here for the demo](https://ledgerly-five.vercel.app)
+[LEDGERLY - Click here for the demo](https://ledgerly-five.vercel.app)
 
 > Note: The application is still evolving. More content and features will be available soon!
 
