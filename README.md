@@ -23,13 +23,13 @@ Users can register or log in using a beautiful, responsive User interface.
 
 Once logged in, users are directed to the Dashboard Page. Here, they can review their overall finance activities.
 
-![Dashboard Page](./Screenshots/Dashboard%20Page.png)
+![Dashboard Page](./frontend/public/assets/images/Screenshots/Dashboard%20Page.png)
 
 - INCOME OR EXPENSE PAGE:
 
 Users can get a detailed analysis of their incomes (or expenses) specifically in the Income (or Expense) Page.
 
-![Income Page](./Screenshots/Income%20Page.png)
+![Income Page](./frontend/public/assets/images/Screenshots/Income%20Page.png)
 
 Whole analysis throughout the website is supported by corresponding graphs to make it easy for the users to understand the patterns, if any.
 
