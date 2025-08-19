@@ -46,7 +46,7 @@ Whole analysis throughout the website is supported by corresponding graphs to ma
 **Frontend:** React, Tailwind CSS  
 **Backend:** Node.js, Express  
 **Database:** MongoDB + Mongoose  
-**Graphs:** Recharts.js
+**Graphs:** Recharts.js  
 **Auth:** JWT, bcrypt
 
 ## Contact Me:
