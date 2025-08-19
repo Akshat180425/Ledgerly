@@ -1,4 +1,4 @@
-<img width="1905" height="942" alt="image" src="https://github.com/user-attachments/assets/d841d40c-7269-4314-9ba1-c265eba77493" /># Ledgerly
+# Ledgerly
 
 A full-stack personal finance tool designed for seamless expense tracking and budget planning, built using **MERN** Stack.
 
