@@ -1,16 +1,18 @@
 import React from 'react' 
-const CustomTooltip = ({active, payload}) => {
+const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
+    const item = payload[0].payload;
     return (
-      <div className="bg-white shadow-md rounded-lg p-2 border border-gray-300">
-        <p className="text-xs font-semibold text-purple-800 mb-1">{payload[0].name}</p>
-        <p className="text-sm text-gray-600">
-          Amount: <span className="text-sm font-medium text-gray-900">₹{payload[0].value}</span>
-        </p>
+      <div className="bg-white p-2 shadow rounded text-sm">
+        <p><strong>{label}</strong></p>
+        <p>Amount: ₹{item.amount}</p>
+        {item.category && <p>Category: {item.category}</p>}
+        {item.source && <p>Source: {item.source}</p>}
       </div>
-    )
+    );
   }
-  return null
-}
+
+  return null;
+};
 
 export default CustomTooltip

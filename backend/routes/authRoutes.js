@@ -1,16 +1,17 @@
-const express = require("express"); 
-const upload = require("../middleware/uploadMiddleware");
-const { registerUser, loginUser, getUserInfo, } = require("../controllers/authController"); 
+const router = require("express").Router();
+const { rateLimit } = require("express-rate-limit");
+const auth = require("../controllers/authController");
 const { protect } = require("../middleware/authMiddleware");
-const router = express.Router(); 
-router.post("/register", registerUser); 
-router.post("/login", loginUser); 
-router.get("/getUser", protect, getUserInfo); 
-router.post("/upload-image", upload.single("image"), (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ message: "No file uploaded" });
-  }
-  const imageUrl = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
-  res.status(200).json({ imageUrl });
-});
+const upload = require("../middleware/uploadMiddleware");
+const authLimit = rateLimit({ windowMs: 15 * 60_000, limit: 30, skipSuccessfulRequests: true, standardHeaders: "draft-8", legacyHeaders: false, message: { message: "Too many sign-in attempts. Try again in 15 minutes." } });
+router.post("/register", authLimit, auth.registerUser);
+router.post("/login", authLimit, auth.loginUser);
+router.post("/google", authLimit, auth.googleLogin);
+router.get("/config", (req, res) => res.json({ googleClientId: process.env.GOOGLE_CLIENT_ID || null }));
+router.get("/getUser", protect, auth.getUserInfo);
+router.post("/logout", protect, auth.logout);
+router.post("/google/link", protect, authLimit, auth.linkGoogle);
+router.put("/profile", protect, auth.updateProfile);
+router.post("/upload-image", protect, upload.single("image"), auth.uploadPhoto);
+router.get("/photo", protect, auth.getPhoto);
 module.exports = router;

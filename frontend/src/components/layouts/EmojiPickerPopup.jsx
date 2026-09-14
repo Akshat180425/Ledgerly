@@ -1,4 +1,4 @@
-import react, { useState } from 'react'
+import React, { useState } from 'react'
 import EmojiPicker from "emoji-picker-react"; 
 import { LuImage, LuX } from "react-icons/lu"; 
 

@@ -1,87 +1,37 @@
-import React from 'react'
-import AuthLayout from '../../components/layouts/AuthLayout'
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Input from '../../components/Inputs/Input';
-import { Link } from 'react-router-dom';
-import { validateEmail } from '../../utils/helper';
-import axiosInstance from '../../utils/axiosInstance';
-import { UserContext } from '../../context/UserContext';
-import { API_PATHS } from '../../utils/apiPaths';
-import { useContext } from 'react';
-
-const Login = () => {
-
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-
-  const { updateUser } = useContext(UserContext);
-
-  const navigate = useNavigate();
-
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    if (!validateEmail(email)) {
-      setError("Please enter a valid email address.");
-      return;
-    }
-    if (!password) {
-      setError("Please enter the password");
-      return;
-    }
-    setError("");
-
-    try { 
-      const response = await axiosInstance.post(API_PATHS.AUTH.LOGIN, { 
-        email, 
-        password, 
-      }); 
-      const { token, user } = response.data; 
-      if (token) { 
-        localStorage.setItem( "token", token); 
-        updateUser(user); 
-        navigate("/dashboard"); 
-      } 
-    } catch (error) { 
-      if (error.response && error.response.data.message) { 
-        setError(error.response.data.message); 
-      } else { 
-        setError("Something went wrong. Please try again."); 
-      } 
-    }
-  }
-
-  return (
-    <AuthLayout>
-      <div className="lg:w-[70%] h-3/4 md:h-full flex flex-col justify-center">
-        <h3 className="text-xl font-semibold text-black">Welcome Back</h3>
-        <p className="text-gray-700 text-xs mt-[5px] mb-6">Please enter your credentials to login</p>
-
-        <form onSubmit={handleLogin}>
-          <Input value={email} onChange={({ target }) => setEmail(target.value)} label="Email Address" placeholder="john@example.com" type="text" />
-          <Input value={password} onChange={({ target }) => setPassword(target.value)} label="Password" placeholder="********" type="password" />
-
-          {error && <p className="text-red-500 text-xs pb-2.5">{error}</p>}
-
-          <button type="submit" className="btn-primary"> LOGIN </button>
-
-          <p className="text-[13px] text-slate-800 mt-3">
-
-            Don't have an account?{" "}
-
-            <Link className="font-medium text-primary underline" to="/signup">
-
-              SignUp
-
-            </Link>
-
-          </p>
-
-        </form>
-      </div>
-    </AuthLayout>
-  )
+import { useState } from "react";
+import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
+import { LuEye, LuEyeOff, LuArrowRight } from "react-icons/lu";
+import AuthLayout from "../../components/layouts/AuthLayout";
+import GoogleSignIn from "../../components/GoogleSignIn";
+import { Field, Loading, ErrorState } from "../../components/FinanceUI";
+import { useAuth } from "../../context/authContext";
+import api, { errorMessage } from "../../utils/axiosInstance";
+export default function Login({ signup = false }) {
+  const { user, updateUser, loading, error: authError, refresh } = useAuth();
+  const [fullName, setFullName] = useState(""), [email, setEmail] = useState(""), [password, setPassword] = useState("");
+  const [show, setShow] = useState(false), [busy, setBusy] = useState(false), [error, setError] = useState("");
+  const navigate = useNavigate(), location = useLocation();
+  const destination = location.state?.from || "/dashboard";
+  if (loading) return <Loading />;
+  if (authError) return <ErrorState message={authError} retry={refresh} />;
+  if (user) return <Navigate to={destination} replace />;
+  const success = (data) => { updateUser(data); navigate(destination, { replace: true }); };
+  const submit = async (event) => {
+    event.preventDefault(); setBusy(true); setError("");
+    try { const { data } = await api.post("/api/v1/auth/" + (signup ? "register" : "login"), { fullName, email, password }, { skipAuthEvent: true }); success(data.user); }
+    catch (err) { setError(errorMessage(err)); }
+    finally { setBusy(false); }
+  };
+  return <AuthLayout><p className="eyebrow">YOUR MONEY, IN PERSPECTIVE</p><h1>{signup ? "Create your account" : "Welcome back."}</h1><p className="auth-subtitle">{signup ? "A fresh start for your finances." : "Let's check in on your finances."}</p>
+    <form className="form-stack" onSubmit={submit}>
+      {signup && <Field label="Full name" autoComplete="name" value={fullName} onChange={(e) => setFullName(e.target.value)} required maxLength={100} />}
+      <Field label="Email address" type="email" autoComplete="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required maxLength={254} />
+      <Field label="Password"><div className="password-field"><input type={show ? "text" : "password"} autoComplete={signup ? "new-password" : "current-password"} value={password} onChange={(e) => setPassword(e.target.value)} required minLength={signup ? 10 : undefined} maxLength={72} /><button type="button" className="icon-button" title={show ? "Hide password" : "Show password"} aria-label={show ? "Hide password" : "Show password"} onClick={() => setShow(!show)}>{show ? <LuEyeOff /> : <LuEye />}</button></div></Field>
+      {signup && <span className="field-hint">At least 10 characters.</span>}
+      {error && <p className="form-error" role="alert">{error}</p>}
+      <button className="button primary auth-submit" disabled={busy}>{busy ? "Please wait..." : signup ? "Create account" : "Sign in"}<LuArrowRight /></button>
+    </form>
+    <GoogleSignIn onSuccess={success} />
+    <p className="auth-switch">{signup ? "Already have an account?" : "New to Ledgerly?"} <Link to={signup ? "/login" : "/signup"}>{signup ? "Sign in" : "Create an account"}</Link></p>
+  </AuthLayout>;
 }
-
-export default Login

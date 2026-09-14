@@ -1,11 +1,5 @@
-const express = require("express");
-
+const router = require("express").Router();
 const { protect } = require("../middleware/authMiddleware");
-
-const { getDashboardData } = require("../controllers/dashboardController"); 
-
-const router = express.Router();
-
-router.get("/", protect, getDashboardData);
-
+const { catchUpRecurring } = require("../middleware/recurringMiddleware");
+router.get("/", protect, catchUpRecurring, require("../controllers/dashboardController").getDashboardData);
 module.exports = router;

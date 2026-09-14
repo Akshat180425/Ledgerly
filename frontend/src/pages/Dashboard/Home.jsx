@@ -1,111 +1,26 @@
-import React, { useState, useEffect } from 'react'
-import DashboardLayout from '../../components/layouts/DashboardLayout'
-import { useNavigate } from 'react-router-dom'
-import { useUserAuth } from '../../hooks/UseUserAuth'
-import axiosInstance from '../../utils/axiosInstance'
-import { API_PATHS } from '../../utils/apiPaths'
-import { addThousandsSeparator } from '../../utils/helper'
-import { IoMdCard } from 'react-icons/io'
-import InfoCard from '../../components/Cards/InfoCard'
-import RecentTransactions from '../../components/Dashboard/RecentTransactions'
-import { LuHandCoins, LuWalletMinimal } from 'react-icons/lu'
-import Last30DaysExpenses from '../../components/Dashboard/Last30DaysExpenses'
-import FinanceOverview from '../../components/Dashboard/FinanceOverview'
-import RecentIncomeWithChart from '../../components/Dashboard/RecentIncomeWithChart'
-import RecentIncome from "../../components/Dashboard/RecentIncome"
-import ExpenseTransactions from '../../components/Dashboard/ExpenseTransactions'
-
-const Home = () => {
-
-  useUserAuth();
-
-  const navigate = useNavigate(); 
-  const [dashboardData, setDashboardData] = useState(null); 
-  const [loading, setLoading] = useState(false); 
-  
-  const fetchDashboardData = async () => { 
-    if (loading) return; 
-    setLoading(true); 
-    try { 
-      const response = await axiosInstance.get(
-        `${API_PATHS.DASHBOARD.GET_DATA}` 
-      ); 
-      if (response.data) { 
-        setDashboardData(response.data); 
-      } 
-    } catch (error) { 
-      console.log(
-        "Something went wrong. Please try again.", 
-        error
-      ) 
-    } finally { 
-      setLoading(false); 
-    } 
-  };
-
-  React.useEffect(() => {
-    fetchDashboardData();
-  }, []);
-
-  return (
-    <DashboardLayout activeMenu="Dashboard">
-      <div className="my-5 mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6"> 
-          <InfoCard 
-            icon={<IoMdCard/>} 
-            label="Total Balance" 
-            value={addThousandsSeparator(dashboardData?.totalBalance || 0)} 
-            color="bg-primary" 
-          />
-          <InfoCard 
-            icon={<LuWalletMinimal/>} 
-            label="Total Income" 
-            value={addThousandsSeparator(dashboardData?.totalIncome || 0)} 
-            color="bg-orange-500" 
-          />
-          <InfoCard 
-            icon={<LuHandCoins/>} 
-            label="Total Expense" 
-            value={addThousandsSeparator(dashboardData?.totalExpense || 0)} 
-            color="bg-red-500" 
-          />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-          <RecentTransactions 
-            transactions={dashboardData?.recentTransactions}
-          /> 
-
-          <FinanceOverview
-            totalBalance={dashboardData?.totalBalance || 0}
-            totalIncome={dashboardData?.totalIncome || 0}
-            totalExpense={dashboardData?.totalExpense || 0}
-          />
-
-          <Last30DaysExpenses
-            data={dashboardData?.last30DaysExpenses?.transactions || []}
-            totalExpense={dashboardData?.last30DaysExpenses?.total || 0}
-          />
-
-          <ExpenseTransactions
-            transactions={dashboardData?.last30DaysExpenses?.transactions || []}
-            onSeeMore={() => navigate("/expense")}
-          />
-
-          <RecentIncomeWithChart
-            data={dashboardData?.last60DaysIncome?.transactions || []}
-            totalIncome={dashboardData?.last60DaysIncome?.total || 0}
-          />
-
-          <RecentIncome
-            transactions={dashboardData?.last60DaysIncome?.transactions || []}
-            onSeeMore={() => navigate("/income")}
-          />
-
-        </div>
-      </div>
-    </DashboardLayout>
-  )
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { LuPlus, LuWallet, LuArrowDownLeft, LuArrowUpRight, LuArrowRight, LuTriangleAlert, LuTarget } from "react-icons/lu";
+import useResource from "../../hooks/useResource";
+import { useAuth } from "../../context/authContext";
+import { currentMonth, monthLabel, useMoney } from "../../utils/finance";
+import { PageHeader, ResourceState, Stat, EmptyState, Progress, TransactionRow } from "../../components/FinanceUI";
+import { CashFlowChart, SpendingChart, CashLegend } from "../../components/Charts/FinanceCharts";
+import TransactionForm from "../../components/TransactionForm";
+import Modal from "../../components/Modal";
+export default function Home() {
+  const [month, setMonth] = useState(currentMonth()), [adding, setAdding] = useState(false);
+  const resource = useResource("/api/v1/dashboard", { month }), money = useMoney(), { user } = useAuth();
+  const data = resource.data;
+  const warnings = (data?.budgets || []).filter((budget) => budget.status !== "on-track");
+  return <><PageHeader eyebrow={"HELLO, " + (user?.fullName?.split(" ")[0] || "THERE").toUpperCase()} title="Your money at a glance"><input className="month-input" type="month" aria-label="Dashboard month" value={month} min="2000-01" max="2100-12" onChange={(e) => e.target.value && setMonth(e.target.value)} /><button className="button primary" onClick={() => setAdding(true)}><LuPlus />Add transaction</button></PageHeader>
+    <ResourceState resource={resource}>{data && <>
+      <div className="stats-band"><Stat label="Total balance" value={money(data.totalBalance)} icon={LuWallet} detail="Across all recorded transactions" /><Stat label="Income" value={money(data.income)} icon={LuArrowDownLeft} tone="green" detail={monthLabel(month)} /><Stat label="Expenses" value={money(data.expense)} icon={LuArrowUpRight} tone="coral" detail={monthLabel(month)} /></div>
+      {warnings.length > 0 && <Link to={"/budgets"} className="warning-banner"><LuTriangleAlert /><span>{warnings.map((budget) => budget.category + ": " + Math.round(budget.percent) + "% of budget").join(" / ")}</span><LuArrowRight /></Link>}
+      <div className="dashboard-grid"><section className="chart-panel"><div className="section-heading"><div><h2>Cash flow</h2><p>Six-month income and expenses</p></div><CashLegend /></div><CashFlowChart data={data.trends} /></section><section className="chart-panel"><div className="section-heading"><div><h2>Spending breakdown</h2><p>{monthLabel(month)}</p></div><Link className="icon-button" title="View analytics" aria-label="View analytics" to="/analytics"><LuArrowRight /></Link></div><SpendingChart categories={data.categories} /></section></div>
+      <div className="dashboard-grid lower-grid"><section className="plain-section"><div className="section-heading"><h2>Recent transactions</h2><Link className="text-link" to="/transactions">View all<LuArrowRight /></Link></div>{data.recentTransactions.length ? data.recentTransactions.map((item) => <TransactionRow key={item._id} item={item} />) : <EmptyState title="No transactions this month"><button className="button secondary" onClick={() => setAdding(true)}><LuPlus />Add transaction</button></EmptyState>}</section>
+      <section className="plain-section"><div className="section-heading"><h2>Savings goals</h2><Link className="text-link" to="/goals">View all<LuArrowRight /></Link></div>{data.goals.length ? data.goals.slice(0, 3).map((goal) => <div className="goal-preview" key={goal._id}><div><strong>{goal.name}</strong><span>{Math.round(goal.percent)}%</span></div><Progress value={goal.percent} label={goal.name} /><p>{money(goal.savedAmount)}<span>of {money(goal.targetAmount)}</span></p></div>) : <EmptyState icon={LuTarget} title="What are you saving for?"><Link className="button secondary" to="/goals"><LuPlus />New savings goal</Link></EmptyState>}</section></div>
+    </>}</ResourceState>
+    <Modal title="Add transaction" isOpen={adding} onClose={() => setAdding(false)}><TransactionForm onCancel={() => setAdding(false)} onSaved={() => { setAdding(false); void resource.refresh(); }} /></Modal>
+  </>;
 }
-
-export default Home

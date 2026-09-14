@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import CustomLineChart from '../Charts/CustomLineChartForIncomes';
+import CustomLineChart from '../Charts/CustomLineChartForIncomes.jsx';
 import { prepareIncomeBarChartData } from '../../utils/helper';
 
 const RecentIncomeWithChart = ({ data, totalIncome }) => {

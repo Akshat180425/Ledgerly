@@ -1,17 +1,12 @@
-const express = require("express"); 
-
-const {
-addIncome,
-getAllIncome,
-deleteIncome,
-downloadIncomeExcel } = require("../controllers/incomeController");
-
-const { protect } = require("../middleware/authMiddleware"); 
-const router = express.Router(); 
-
-router.post("/add", protect, addIncome); 
-router.get("/get", protect, getAllIncome); 
-router.get("/downloadexcel", protect, downloadIncomeExcel); 
-router.delete("/:id", protect, deleteIncome); 
-
+const router = require("express").Router();
+const { protect } = require("../middleware/authMiddleware");
+const { catchUpRecurring } = require("../middleware/recurringMiddleware");
+const controller = require("../controllers/incomeController");
+const transactions = require("../controllers/transactionController");
+router.use(protect, catchUpRecurring);
+router.post("/add", controller.addIncome);
+router.get("/get", controller.getAllIncome);
+router.get("/downloadexcel", controller.downloadIncomeExcel);
+router.put("/:id", transactions.update("income"));
+router.delete("/:id", controller.deleteIncome);
 module.exports = router;

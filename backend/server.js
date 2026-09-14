@@ -1,32 +1,18 @@
-require("dotenv").config(); 
-const express = require("express"); 
-const cors = require("cors"); 
-const path = require("path"); 
+require("dotenv").config();
 const connectDB = require("./config/db");
-const authRoutes = require("./routes/authRoutes");
-const incomeRoutes = require("./routes/incomeRoutes");
-const expenseRoutes = require("./routes/expenseRoutes");
-const dashboardRoutes = require("./routes/dashboardRoutes");
-
-const app = express(); 
-app.use(
-  cors({
-    origin: [
-      "http://localhost:5173",
-      "https://ledgerly-five.vercel.app",
-    ],
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
-app.use(express.json()); 
-connectDB();
-
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-app.use("/api/v1/auth", authRoutes);
-app.use("/api/v1/income", incomeRoutes);
-app.use("/api/v1/expense", expenseRoutes);
-app.use("/api/v1/dashboard", dashboardRoutes);
-const PORT = process.env.PORT || 5000; 
-app. listen(PORT, () => console.log(`Server running on port ${PORT}`));
+const app = require("./app");
+const { processDueRecurring } = require("./services/recurringService");
+async function start() {
+  if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) throw new Error("JWT_SECRET must contain at least 32 characters");
+  await connectDB();
+  await Promise.all(["User", "Income", "Expense", "Budget", "Goal", "Recurring"].map((name) => require("./models/" + name).init()));
+  const server = app.listen(process.env.PORT || 8000, "0.0.0.0", () => console.log("Ledgerly API listening on port " + server.address().port));
+  const run = () => processDueRecurring().catch(() => console.error("Recurring processing failed; will retry"));
+  void run();
+  const timer = setInterval(run, 60_000);
+  timer.unref();
+  const shutdown = () => { clearInterval(timer); server.close(() => process.exit(0)); };
+  process.on("SIGTERM", shutdown);
+  process.on("SIGINT", shutdown);
+}
+start().catch((error) => { console.error(error.message); process.exit(1); });
